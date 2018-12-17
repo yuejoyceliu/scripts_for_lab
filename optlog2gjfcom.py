@@ -1,9 +1,17 @@
 #!/usr/bin/env python
 
-#AUTHOR: Yue Liu
-#EMAIL: yueliu96@uw.edu
-#Created on 11/26/2018
-#Edited on 12/05/2018
+'''
+ AUTHOR: Yue Liu
+ EMAIL: yueliu96@uw.edu
+ Created on 11/26/2018
+ Edited on 12/16/2018
+Usage:
+ python optlog2gjfcom.py optlogfile
+Description:
+ - check if finish by find $OPT('Stationary point found')
+ - If finish, extract the optimized coordinates (key: $OPT,$XYZ1,$XYZ2) and find charge and mutiplicity from the last paragragh (key: $STOP). If most suffixes are gjf, it will be named as com; vice versa.
+ - If not finish, try to write restarted gaussian input file. Its suffix is same as old one. Old input file and checkpoint file must in the same directory.
+'''
 
 import sys,os,glob
 
@@ -73,9 +81,9 @@ def getvalues(s,n):
         return values
 
 def findcoords(lines,fl):
-#'Stationary point found' as the first key to locate the optimized structure;
-#'Standard orientation' as the second key because every run generates one 'Standard orienctation'.
-#'---------' as the last key. There are three these dash lines. Coords are in btw the second and the third dash lines.
+#'Stationary point found' is the first key to locate the optimized structure;
+#'Standard orientation' is the second key because every run generates one 'Standard orientation'.
+#'---------' as the last key. There are three dash lines. Coords are in btw the second and the third one.
 #if stationary point not found, it will write a new restarted gjf file to submit the job again.
     check=0
     for i in range(len(lines)):
@@ -103,7 +111,7 @@ def findcoords(lines,fl):
     coords = []
     for lss in newlines[numl[1]+1:numl[2]]:
         v_xyz = getvalues(lss,6)
-        xyz = '%2s%16s%16s%16s' % (PTCE[int(v_xyz[1])],v_xyz[3],v_xyz[4],v_xyz[5])
+        xyz = ' %-2s%16s%16s%16s' % (PTCE[int(v_xyz[1])],v_xyz[3],v_xyz[4],v_xyz[5])
         coords.append(xyz+'\n')
     return strt,coords
   
