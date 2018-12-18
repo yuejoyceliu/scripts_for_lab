@@ -4,13 +4,13 @@
  AUTHOR: Yue Liu
  EMAIL: yueliu96@uw.edu
  Created on 11/26/2018
- Edited on 12/16/2018
+ Edited on 12/17/2018
 Usage:
  python optlog2gjfcom.py optlogfile
 Description:
  - check if finish by find $OPT('Stationary point found')
- - If finish, extract the optimized coordinates (key: $OPT,$XYZ1,$XYZ2) and find charge and mutiplicity from the last paragragh (key: $STOP). If most suffixes are gjf, it will be named as com; vice versa.
- - If not finish, try to write restarted gaussian input file. Its suffix is same as old one. Old input file and checkpoint file must in the same directory.
+ - If finish, extract the optimized coordinates (key: $OPT,$XYZ1,$XYZ2) and find charge and mutiplicity from the last paragragh (key: the 1st $STOP after $OPT). If most suffixes are gjf, it will be named as com; vice versa.
+ - If not finish, try to write restarted gaussian input file. Its suffix is same as old one. Old input file and checkpoint file must in the same directory. input file name is the same as log file, but the suffix. chk file name is found in old input file.
 '''
 
 import sys,os,glob
@@ -81,9 +81,9 @@ def getvalues(s,n):
         return values
 
 def findcoords(lines,fl):
-#'Stationary point found' is the first key to locate the optimized structure;
-#'Standard orientation' is the second key because every run generates one 'Standard orientation'.
-#'---------' as the last key. There are three dash lines. Coords are in btw the second and the third one.
+#'Stationary point found' as the first key to locate the optimized structure;
+#'Standard orientation' as the second key because every run generates one 'Standard orienctation'.
+#'---------' as the last key. There are three these dash lines. Coords are in btw the second and the third dash lines.
 #if stationary point not found, it will write a new restarted gjf file to submit the job again.
     check=0
     for i in range(len(lines)):
@@ -111,11 +111,12 @@ def findcoords(lines,fl):
     coords = []
     for lss in newlines[numl[1]+1:numl[2]]:
         v_xyz = getvalues(lss,6)
-        xyz = ' %-2s%16s%16s%16s' % (PTCE[int(v_xyz[1])],v_xyz[3],v_xyz[4],v_xyz[5])
+        xyz = '%-4s%16s%16s%16s' % (PTCE[int(v_xyz[1])],v_xyz[3],v_xyz[4],v_xyz[5])
         coords.append(xyz+'\n')
     return strt,coords
   
 def restartopt(fl):
+#try to find old input file
     suffix='.gjf'
     s2='.com'
     ginput = fl+suffix 
@@ -124,22 +125,20 @@ def restartopt(fl):
         ginput = fl+suffix
         if not os.path.isfile(ginput):
             raise SystemExit(':::>_<:::%s.gjf/com Not Found! Cannot write restarted input file...\n' % fl)
+#read chk and route card from old file
     with open(ginput,'r') as fo:
         lines = fo.readlines()
-    lk = [l for l in lines if l.startswith('%') and not l.lower().startswith('%lindaworker') and not l.lower().startswith('%oldchk')]
+    chk = [l.strip() for l in lines if l.lower().startswith('%chk')]
     rt = [l for l in lines if l.startswith('#')]
-    if not bool(lk) or not bool(rt):
-        raise SystemExit(':::>_<:::No link section or/and route section found! Fail to write restarted gauss input file...\n')
-    chk = [l for l in lk if l.lower().startswith('%chk')]
-    if bool(chk):
-        chkfl = chk[0].strip().split('=')[1]
-        if not os.path.isfile(chkfl):
-            raise SystemExit(':::>_<:::%s Not Found! Cannot write restarted input file...\n' % chkfl)
-    else:
-        raise SystemExit(':::>_<:::Needs chk file to restart a job, but seems that you don\'t have one!\n')
+    if not bool(chk) or not bool(rt):
+        raise SystemExit(':::>_<:::No chk or/and route section found! Fail to write restarted gauss input file...\n')
+    chkfl = chk[0].split('=')[1]
+    if not os.path.isfile(chkfl):
+        raise SystemExit(':::>_<:::%s Not Found! Cannot write restarted input file...\n' % chkfl)
+#write restarted input file based on old one.
     if 'opt' in rt[0].lower():
-        link = writelink(lk)
-        route = writeroute(rt[0])
+        link=['%UseSSH\n%mem=32GB\n%nprocshared=28\n%chk='+chkfl+'\n']
+        route = generateroute(rt[0])
         newinput = ginput[:-4]+'_rst'+suffix
     else:
         raise SystemExit(':::>_<:::Cannot locate opt in the route section! Fail to write restarted gauss input file...\n')
@@ -150,23 +149,7 @@ def restartopt(fl):
     print('Next Step:\n ~/Hyak-Gaussian/gaussain-sub.py %s\n sbatch %s.sh' % (newinput,newinput[:-4]))
     print('You can use mergeOPTlog.py to merge two log files if you wanted!')
 
-def writelink(oldlk):
-    newlk=[]
-    for l in oldlk:
-        if l.lower().startswith('%chk'):
-            tl = l.split('=')
-            ttll = tl[1].split('.')
-            newlk.append('%oldchk='+tl[1])
-            newlk.append('%chk='+ttll[0]+'_rst.chk\n')
-        else:
-            newlk.append(l)
-    if not os.path.isfile(tl[1].strip()):
-        print('Warning'.center(60,'-'))
-        print('you should have %s file to continue tddft job!' % tl[1].strip())
-        print('-'*60)
-    return newlk
-
-def writeroute(optrt):
+def generateroute(optrt):
     newrt = []
     for r in optrt.split():
         if r.lower()=='opt':
@@ -175,8 +158,8 @@ def writeroute(optrt):
             newrt.append(r)
     return ' '.join(newrt)+'\n\n'
 
-
 def findchgmp(lss):
+#find the charge and multiplicity from 1st '#' after find opt coord; if not found,  use -1 -1 be default
     key='key'
     for i in range(len(lss)):
         line=lss[i]
@@ -200,7 +183,7 @@ def findchgmp(lss):
                 return int(ts[0]),int(ts[1])
             except:
                 continue
-    print(':::>_<:::Couldn\'t find charge and multiplicity. Use -1 -1 by default')
+    print(':::>_<:::Couldn\'t find charge and multiplicity. Use -1 -1 by defaulti.You could chage 50 in findchgmp function to a larger number to fix it.')
     return -1,-1
         
 def optlog2gjfcom(log,mo):
