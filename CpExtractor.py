@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+#AUTHOR: Yue Liu
 #Created: 11/29/2018
-#Extract Cp from all *_freq.csv files in the working direcotry
 #Usage: python CpExtractor.py
+#Description: extract Cp from all *_freq.csv files in the working direcotry
 
 import glob
 
@@ -20,13 +21,14 @@ def findCp(fl):
         keylist = keyline.split(',')
         return keylist[-1]
     else:
-        raise SystemExit(':::>_<:::Cp Not Found! in '+fl)
+        print('Warning: Cp Not Found! in '+fl)
+        return 'NA'
         
 def CpExtractor():
     xx=glob.glob('*_freq.csv')
     xx.sort()
     if not bool(xx):
-        raise SystemExit(':::>_<:::No *_freq.csv Files!')
+        raise SystemExit(':::>_<:::No *_freq.csv Files Exist!')
     fo=open('Cp.csv','w')
     fo.write('struct,Cp(J/mol/K)\n')
     for x in xx:

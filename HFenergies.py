@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 '''
-AUTHOR: Yue Liu
-EMAIL: yueliu96@uw.edu
-Created: 12/03/2018
-Edited: 12/08/2018
+ AUTHOR: Yue Liu
+ EMAIL: yueliu96@uw.edu
+ Created: 12/03/2018
+ Edited: 12/08/2018
+ Usage: python HFenergies.py
+ Description:
 used to extract HF Energy(the last SCF Done) from every log file in the current directory.
 if not optimized(not found 'Stationary point found'), return NA.
-you will get gaussHFenergy.csv with energy in the ascending order.
+you will get HFenergies.csv with energy in the ascending order.
 '''
 import sys,glob,csv
 
@@ -17,7 +19,7 @@ def checkcommand():
         else:
             raise SystemExit(':::>_<::: No LOG Founded!')
     else:
-        raise SystemExit('\n python HFenergy.py\n')
+        raise SystemExit('\n python HFenergies.py\n')
 
 def scfdone(fl):
     with open(fl,'r') as fo:
@@ -33,14 +35,11 @@ def scfdone(fl):
         energy = getvalue(scf[-1])
         return energy
     else:
-        length = 15+len(fl)
-        print('Warning'.center(length,'-'))
-        print('%s Not Optimized!' % fl)
-        print('-'*length)
+        print('\'<_\' Warning: %s Not Optimized!' % fl)
         return 'NA'
 
 def getvalue(s):
-#return in the first number in the string s
+#return the first number in the string s
     nums = list(map(str,range(10)))
     nums.append('-')
     ls = s.split()
@@ -49,21 +48,21 @@ def getvalue(s):
             return x
     return 'none' 
         
-def HFenergy(logs):
+def HFenergies(logs):
     result=[]
     for log in logs:
         e = scfdone(log)
-        result.append([log[:-4],e])
+        result.append([log.split('.')[0],e])
     result.sort(key=lambda x: x[1],reverse=True)
     out = 'HFenergies.csv'
     with open(out,'w') as fo:
         wrfo = csv.writer(fo)
         wrfo.writerow(['struct','energy(Hartrees)'])
         wrfo.writerows(result)
-    print('**\(^O^)/**Please check your output file: '+out)
+    print('**\(^O^)/**Please check your output file: %s!' % out)
 
 
 if __name__=='__main__':
     optlogs = checkcommand()
-    HFenergy(optlogs)
+    HFenergies(optlogs)
  

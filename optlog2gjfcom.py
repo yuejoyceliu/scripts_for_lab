@@ -15,10 +15,9 @@ Description:
 
 import sys,os,glob
 
-MEM='%mem=32GB'
-NProc='%nprocshared=28'
-CHK='%chk='
+LINK='%UseSSH\n%mem=32GB\n%nprocshared=28\n'
 ROUTE='# td(NStates=25) um062x/6-31+g(d,p) pop=min scf=(xqc,tight)'
+CHK='%chk='
 OPT='Stationary point found'
 XYZ1='Standard orientation:'
 XYZ2=' --------------'
@@ -132,12 +131,12 @@ def restartopt(fl):
     rt = [l for l in lines if l.startswith('#')]
     if not bool(chk) or not bool(rt):
         raise SystemExit(':::>_<:::No chk or/and route section found! Fail to write restarted gauss input file...\n')
-    chkfl = chk[0].split('=')[1]
+    chkfl = chk[0].split('=')[1].split('.')[0]+'.chk'
     if not os.path.isfile(chkfl):
         raise SystemExit(':::>_<:::%s Not Found! Cannot write restarted input file...\n' % chkfl)
 #write restarted input file based on old one.
     if 'opt' in rt[0].lower():
-        link=['%UseSSH\n%mem=32GB\n%nprocshared=28\n%chk='+chkfl+'\n']
+        link=LINK+'%chk='+chkfl+'\n'
         route = generateroute(rt[0])
         newinput = ginput[:-4]+'_rst'+suffix
     else:
@@ -199,8 +198,7 @@ def optlog2gjfcom(log,mo):
         out = mo+'_opt.gjf'
     print('  Default: %s' % ROUTE)
     with open(out,'w') as fo:
-        fo.write(MEM+'\n')
-        fo.write(NProc+'\n')
+        fo.write(LINK)
         fo.write(CHK+mo+'.chk'+'\n')
         fo.write(ROUTE+'\n')
         fo.write('\n')

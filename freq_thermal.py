@@ -36,6 +36,7 @@ def checkcommand(n):
             raise SystemExit(':::>_<:::%s Not Found!' % sys.argv[1])
 
 def getvalues(s,n):
+#get the first n positive values in the string s
     i = 0
     values = []
     ls = s.split()
@@ -55,7 +56,7 @@ def readlogfile(log):
     with open(log,'r') as fo:
         lines = fo.readlines()
     frequencies=[]
-    ifreq,dof = 0,-1
+    ifreq,dof = 0,'?'
     try:
         for i in range(len(lines)):
             line = lines[i].lstrip()
@@ -84,10 +85,13 @@ def readlogfile(log):
                     raise SystemExit(':::>_<:::Frequency Starts With A Negative Value')
                 frequencies.extend(freq3)
         readinfo = [natoms,dof,amu,t,p,zpve,S_elec,S_trans,S_rot]
-    except (ValueError,NameError,TypeError) as err:
-        print('Error:',err)
-        raise SystemExit(':::>_<:::%s Not Finished! FYI: %d out of %d frequencies found' % (log,len(frequencies),dof))
+    except:
+        err=sys.exc_info()
+        print('python error in line %d: ' % err[2].tb_lineno)
+        print(err[1])
+        raise SystemExit(':::>_<:::%s Not Finished! FYI: %d out of %s frequencies found' % (log,len(frequencies),dof))
     return readinfo,frequencies
+
 
 def pttfunc(f):
     #using partition function to calculate vibS & vibH

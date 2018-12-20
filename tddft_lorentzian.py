@@ -14,8 +14,8 @@ KEY = ' Excited State '
 HWHM = 10
 SCALER = 1
 WaveNumbers = range(200,1101)
-START = 210
-END = 700
+START = 210 #nm
+END = 700 #nm
 
 def checkcommand(n):
     if n!=2:
@@ -32,7 +32,8 @@ def checkcommand(n):
 def tddft(logfile,outfile):
     keylines = readlogfile(logfile)
     allpeaks = list(map(readpeaks,keylines))
-    allpeaks = [list(x) for x in allpeaks]
+    allpeaks = [list(x) for x in allpeaks]#type(x)=tuple
+#check if it covers 210nm
     if allpeaks[-1][0]>START:
         print('Warning'.center(60,'-'),'\n%s doesn\'t reach %snm' % (logfile,START))
         print('the last three excitations in the log [freq,f,S^2]:\n%s\n%s\n%s' % (allpeaks[-3],allpeaks[-2],allpeaks[-1]))
@@ -42,13 +43,15 @@ def tddft(logfile,outfile):
             float(input('? Do you still want to calculate spectrum using the current tddft log---[any number:yes],[any string or enter:no]: '))
         except:
             raise SystemExit('\'<_\' Ended Normally......')
+#count peaks as long as S**2<2.6
+    realpeaks = [x for x in allpeaks if x[2]<MAXSS2]
+#anoher way: count peaks in 700-210nm and S***2<2.6; then choose to keep or delete peaks out of range:
     '''
     realpeaks = [x for x in allpeaks if x[2]<MAXSS2 and START<=x[0]<=END]
     extrapeaks = [x for x in allpeaks if x[2]<MAXSS2 and (x[0]<START or x[0]>END)]
     if bool(extrapeaks):
         realpeaks = addpeaks(realpeaks,extrapeaks)
     '''
-    realpeaks = [x for x in allpeaks if x[2]<MAXSS2]
     spectrum=[]
     for wn in WaveNumbers:
         intensities = list(map(lorentzian,realpeaks,[wn]*len(realpeaks)))
@@ -136,13 +139,13 @@ def chformat(allpeaks,realpeaks,result):
     return finalresult
 
 def addstates(fl):
-    gjf=fl+'.gjf'
-    com=fl+'.com'
+    suffix = '.gjf'
+    gjf=fl+suffix
     print('\'<_\' start to write new gaussian input file for adding more states to calculate...')
     if not os.path.isfile(gjf):
-        if os.path.isfile(com):
-            gjf=com
-        else:
+        suffix = '.com'
+        gjf = fl+suffix
+        if not os.path.isfile(gjf):
             print(':::>_<::: %s.gjf/com Not Found! Couldn\'t write restarted input file!' % fl)
             return
     with open(gjf,'r') as fo:
@@ -150,11 +153,11 @@ def addstates(fl):
     lk = [l for l in lines if l.startswith('%') and not l.lower().startswith('%lindaworker') and not l.lower().startswith('%oldchk')]
     rt = [l for l in lines if l.startswith('#')]
     if not bool(lk) or not bool(rt) or 'td' not in rt[0].lower():
-        print(':::>_<:::%s format not correct! Couldn\'t write restarted gjf file!' % gjf)
+        print(':::>_<:::%s format not correct! Couldn\'t write restarted input file!' % gjf)
         return
     link = writelink(lk)
     route = writeroute(rt[0])
-    newgjf = fl+'_add.gjf'
+    newgjf = fl+'_add'+suffix
     with open(newgjf,'w') as fo:
         fo.writelines(link)
         fo.writelines(route)
@@ -165,15 +168,15 @@ def writelink(oldlk):
     newlk=[]
     for l in oldlk:
         if l.lower().startswith('%chk'):
-            tl = l.split('=')
-            ttll = tl[1].split('.')
-            newlk.append('%oldchk='+tl[1])
+            tl = l.strip().split('=')
+            ttll = tl[1].split('.')#considering that %chk=mychk same as %chk=mychk.chk
+            newlk.append('%oldchk='+ttll[0]+'.chk\n')
             newlk.append('%chk='+ttll[0]+'_add.chk\n')
         else:
             newlk.append(l)
-    if not os.path.isfile(tl[1].strip()):
+    if not os.path.isfile(ttll[0]+'.chk'):
         print('Warning'.center(60,'-'))
-        print('you should have %s file to continue tddft job!' % tl[1].strip())
+        print('you should have %s.chk file to continue tddft job!' % ttll[0])
         print('-'*60)
     return newlk
 
