@@ -13,9 +13,9 @@ def generator(a,b,m,n):
         name.append(a+str(i)+b+'\n')
     x = time.strftime('%Y%m%d%H%M%S',time.localtime())
     x = 'log'+x+'.txt'
-    with open('name.txt','w') as fo:
+    with open(x,'w') as fo:
         fo.writelines(name)
-    print('**\(^O^)/** check name.txt & run mergeOPTlog.py!')
+    print('**\(^O^)/** check '+x+' & run mergeOPTlog.py!')
 
 if __name__=='__main__':
     prefix,suffix,strt,end=checkcommand(len(sys.argv))

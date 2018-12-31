@@ -1,19 +1,24 @@
 #!/usr/bin/env python
 
-#extract 'Step number' & 'SCF Done' from all log files in the working directory
+#Author: Yue Liu
+#Usage: python SCFextractor
+#extract 'Step number','Predicted change' & 'SCF Done' from all log files in the working directory
 
 import os,glob,time
 
 def read2writelog(f,out):
     wrout = open(out,'a')
-    wrout.write('######'+f+'######'+'\n')
+    wrout.write(f.center(80,'-')+'\n')
     with open(f,'r') as fo:
         lines = fo.readlines()
     for line in lines:
-        if line.lstrip()[:11]=='Step number':
+        line=line.lstrip()#keep \n at right
+        if line.startswith('Step number'):
             wrout.write(line)
-        if line.lstrip()[:8]=='SCF Done':
-            wrout.write(line)
+        if line.startswith('Predicted change'):
+            wrout.write('\t'+line)
+        if line.startswith('SCF Done'):
+            wrout.write('\t\t'+line)
     wrout.write('\n')
     wrout.close()
 
@@ -22,7 +27,7 @@ def extractor():
     x = time.strftime('%Y%m%d%H%M%S',time.localtime())
     x = 'opt'+x+'.txt'
     alllog = glob.glob('*.log')
-    alllog.sort()
+    alllog.sort(key=lambda x: (len(x),x),reverse=False)
     for log in alllog:
         with open(x,'a') as fout:
             read2writelog(log,x)

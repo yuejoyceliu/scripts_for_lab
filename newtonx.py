@@ -42,6 +42,7 @@ def setinitcond():
     else:
         myinput=input
     a = myinput('? How many states do you want to calculate: ')
+    int(a)
     print('\'<_\': nstats = '+a)
     b = myinput('? method to use, default=[um062x]: ')
     if b=='':
@@ -113,7 +114,7 @@ def writeinputfiles(fl,d1,d2):
 def nx_submit(nm,d):
     with open(d+'/nx_submit.sh','w') as fo:
         fo.write('#!/bin/bash\n#SBATCH --job-name='+nm+'\n')
-        fo.write('#SBATCH --nodes=1\n#SBATCH --ntasks-per-node=28\n#SBATCH --time=10:00:00\n#SBATCH --mem=120G\n')
+        fo.write('#SBATCH --nodes=1\n#SBATCH --ntasks-per-node=28\n#SBATCH --time=10:00:00\n#SBATCH --mem=100G\n')
         fo.write('#SABTCH --workdir='+d+'\n#SBATCH --partition=ckpt\n#SBATCH --account=stf-ckpt\n\n')
         fo.write('echo \'This job will run on\' $SLURM_JOB_NODELIST\n')
         fo.write('#set up time\nbegin=$(date +%s)\n\n')
@@ -138,7 +139,7 @@ def newtonx(opt,log):
         sdo += '$NX/xyz2nx < '+fxyz+';'
         sdo += '$NX/nxinp < '+ fnx+';'
         sdo += 'rm '+fxyz+' '+fnx+';'
-        sdo += 'echo \"\'<_\': 300 initial conditions will be calculated...'
+        sdo += 'echo \"\'<_\': 300 initial conditions will be calculated...\n\";'
         sdo += 'echo \"\'<_\': The anwer to the second question is [n]\n\";'
         sdo += '$NX/split_initcond.pl'
         subprocess.call(sdo,shell=True)

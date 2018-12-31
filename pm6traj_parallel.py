@@ -3,12 +3,18 @@
 #AUTHOR: Yue Liu
 #EMAIL: yueliu96@uw.edu
 #Created: 11/27/2018
-#Edited: 12/05/2018
+#Edited: 12/29/2018
 
 import glob,os,sys
 from subprocess import Popen,PIPE
 
 nCORES = 28
+YAML = 'anneal.yaml'
+
+if 1/2==0:
+    myinput = raw_input
+else:
+    myinput = input
 
 def checkcommand():
     if len(sys.argv)!=1:
@@ -24,64 +30,63 @@ def mypathexist(dirs):
 def issamecondition(n):
     x1,x2,x3 = 'could','be','anything'
     print('%d xyz files found in the current directory'  % n)
-    print('-'*60+'\nPlease Specify their charge,multiplicity and temperature(K)\nInputs Must Be ###INTERGERS###\n'+'-'*60)
+    print('-'*60+'\nPlease Specify their charge,multiplicity and temperature(K)\n'+'-'*60)
     try:
-        c1=int(input('? Do they have the same charge [1--yes],[other--no]: '))
-        if c1==1:
-            x1=int(input('? charge: '))
-        c2=int(input('? Do they have the same multiplicity [1--yes],[other--no]: '))
-        if c2==1:
-            x2=int(input('? multiplicity: '))
-        c3=int(input('? Do they have the same temperature: [1--yes],[other--no]: '))
-        if c3==1:
-            x3=int(input('? temperature(K): '))
+        c1 = myinput('? Do they have the same charge [y/Y--yes],[other--no]: ')
+        if c1.lower()=='y':
+            x1=int(myinput('? charge: '))
+        c2 = myinput('? Do they have the same multiplicity [y/Y--yes],[other--no]: ')
+        if c2.lower()=='y':
+            x2=int(myinput('? multiplicity: '))
+        c3 = myinput('? Do they have the same temperature: [y/Y--yes],[other--no]: ')
+        if c3.lower()=='y':
+            x3=float(myinput('? temperature(K): '))
         return x1,x2,x3
     except:
         raise SystemExit(':::>_<:::Invalid Input!')
 
-def anneal_yaml(fl,outfl,chg,mp,t):
-    p1 = ['job: dynamics\n','geometry: '+fl+'\n','maxcycles: 20000\n','timestep: 0.001\n','interface: mopac\n',
-'mopac_precise: yes\n','mopac_peptide_bond_fix: yes\n','method: pm6\n','modifiers: dispersion3, h_bonds4\n']
-    p2 = ['modifier_h_bonds:\n','  h_bonds4_scale_charged: no\n','  h_bonds4_extra_scaling: {}\n','\n']
-    p3 = ['thermostat: berendsen\nthermostat_tc: 0.05\n']
+def yaml(fl,outfl,chg,mp,t):
+    p1 = ['job: dynamics\n','geometry: '+fl+'\n']
+    p2 = ['interface: mopac\n','method: pm6\n','mopac_precise: yes\n','mopac_peptide_bond_fix: yes\n','modifiers: dispersion3, h_bonds4\n']
+    p3 = ['modifier_h_bonds:\n','  h_bonds4_scale_charged: no\n','  h_bonds4_extra_scaling: {}\n','maxcycles: 20000\n','timestep: 0.001\n']
+    p4 = ['thermostat: berendsen\nthermostat_tc: 0.05\n']
     try:
         if isinstance(chg,str):
-            chg = int(input(('? charge of %s: ') % fl))
-        pchg='charge: '+str(chg)+'\n'
+            chg = int(myinput(('? charge of %s: ') % fl))
         if isinstance(mp,str):
-            mp = int(input(('? multiplicity of %s: ') % fl))
+            mp = int(myinput(('? multiplicity of %s: ') % fl))
         if isinstance(t,str):
-            t = int(input(('? temperature(K) of %s: ') %fl))
+            t = float(myinput(('? temperature(K) of %s: ') %fl))
     except:
         raise SystemExit(':::>_<:::Invalid Input!')
     with open(outfl,'w') as fo:
         fo.writelines(p1)
-        fo.write(pchg)
-        if mp!=1:                                          
-            fo.write('multiplicity: '+str(mp)+'\n')    
+        fo.write('charge: '+str(chg)+'\n')                                   
+        fo.write('multiplicity: '+str(mp)+'\n')
+        fo.write('spin_restricted: auto_uhf\n')
+        if mp!=1:
             fo.write('scf_cycles: 1000\n')             
         fo.writelines(p2)
-        if mp!=1:
-            fo.write('spin_restricted: uhf\n')
+        fo.writelines(p3)
         fo.write('init_temp: '+str(t)+'\n')
-        fo.writelines(p3)                                   
         fo.write('temperature: '+str(t)+'\n')
+        fo.writelines(p4)                                   
 
 def tasklists_sh(alldirs,mydir):
     lines = []
     for dd in alldirs:
-        line = 'cd '+mydir+'/'+dd+'; cuby4 anneal.yaml &>LOG\n'
+        line = 'cd '+mydir+'/'+dd+'; cuby4 '+YAML+' &>LOG\n'
         lines.append(line)
     with open('tasklists.sh','w') as fo:
         fo.writelines(lines)
 
 def parallelrun_sh(n,user,mydir):
-    p1 = '#!/bin/bash\n#SBATCH --job-name=dynamics\n#SBATCH --nodes=1\n#SBATCH --time=20:00:00\n#SBATCH --mem=100Gb\n'
+    p1 = '#!/bin/bash\n#SBATCH --job-name=dynamics\n#SBATCH --nodes=1\n#SBATCH --time=20:00:00\n#SBATCH --mem=100G\n'
     p2 = '#SBATCH --workdir='+mydir+'\n'
     p3 = '#SBATCH --partition=stf\n#SBATCH --account=stf\n\n'
     p4 = 'module load parallel-20170722\nmodule load contrib/mopac16\n'
-    p5 = 'source /usr/lusers/'+user+'/.rvm/scripts/rvm\n\n'
-    p6 = 'ldd /sw/contrib/cuby4/cuby4/classes/algebra/algebra_c.so > ldd.log\n\n'
+    p5 = 'source /usr/lusers/'+user+'/.rvm/scripts/rvm\n'
+    p6 = 'ldd /sw/contrib/cuby4/cuby4/classes/algebra/algebra_c.so > ldd.log\n'
     p7 = 'cat tasklists.sh | parallel -j '+str(min(nCORES,n))+'\n'
     with open('parallel_run.sh','w') as fo:
         fo.write(p1)
@@ -103,18 +108,14 @@ def dynamics():
         fxyz = xyzfiles[i]
         dxyz = xyzdirs[i]
         os.mkdir(dxyz)
-        yamlname = dxyz+'/anneal.yaml'
-        anneal_yaml(fxyz,yamlname,charge,mtplct,temp)
+        yamlname = dxyz+'/'+YAML
+        yaml(fxyz,yamlname,charge,mtplct,temp)
         os.rename(fxyz,dxyz+'/'+fxyz)
-    pwd = Popen('pwd',stdout=PIPE,shell=True).stdout.read().strip()
-    who = Popen('whoami',stdout=PIPE,shell=True).stdout.read().strip()
-    if isinstance(pwd,bytes):
-        pwd = pwd.decode()
-    if isinstance(who,bytes):
-        who = who.decode()
+    pwd = Popen('pwd',stdout=PIPE,shell=True).stdout.read().strip().decode()
+    who = Popen('whoami',stdout=PIPE,shell=True).stdout.read().strip().decode()
     tasklists_sh(xyzdirs,pwd)
     parallelrun_sh(nxyz,who,pwd)
-    print('**\(^O^)/**You are ready to run mopac dynamics! Check your files and do:\n sbatch parallel_run.sh')
+    print('**\(^O^)/**You are ready to run mopac dynamics! Check and Run:\n sbatch parallel_run.sh')
 
 if __name__=='__main__':
     checkcommand()

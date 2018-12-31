@@ -10,13 +10,13 @@ STRT = ['%mem=32gb\n','%nprocshared=28\n']
 ROUTE1 = '# opt wb97xd/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
 ROUTE2 = '#T opt freq um062x/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
 CHGMP = '1 2\n'
+TARGET='optimized.xyz'
 
 ROUTE = ROUTE2
 
 def checkcommand():
     if len(sys.argv)!=1:
         raise SystemExit('\npython extract4pm6opt.py\n')
-
 
 def readpm6opt(fl):
     with open(fl,'r') as fo:
@@ -29,7 +29,7 @@ def readpm6opt(fl):
     else:
         return energy,xyz
 
-def writegjf(nm,pos,xyz):
+def writecom(nm,pos,xyz):
     with open(pos+'/'+nm+'.com','w') as fo:
         fo.writelines(STRT)
         fo.write('%chk='+nm+'.chk\n')
@@ -57,8 +57,8 @@ def writeE(pos,t_E):
 
 def extract():
     allfd = os.listdir('.')
-    alldirs = [x for x in allfd if os.path.isdir(x)]
-    alldirs.sort()
+    alldirs = [x for x in allfd if os.path.isdir(x) and x.startswith('d')]
+    alldirs.sort(key=lambda x: (len(x),x))
     newdir = 'optresult'
     if os.path.exists(newdir):
         raise SystemExit('~T^T~ %s Exists! Remove it and try again!' % newdir)
@@ -67,22 +67,24 @@ def extract():
     E=[]    
     for dd in alldirs:
         try:
-            optxyz = dd+'/optimized.xyz'
+            optxyz = dd+'/'+TARGET
             struct = dd[1:]
             t_E,t_xyz = readpm6opt(optxyz)
-            writegjf(struct,newdir,t_xyz)
+            writecom(struct,newdir,t_xyz)
             E.append(dd[1:]+','+t_E+'\n')
-        except IOError as err:
+        except BaseException as err:
             length = 40+len(optxyz)
             print('WARNING'.center(length,'-'))
             print(err)
             print('-'*length)
     if bool(E):
         writeE(newdir,E)
-        print('**\(^O^)/** Check: you should have %d optimized com files and a energy file in %s folder!' % (len(E),newdir))
+        print('**\(^O^)/** %d %s Found! Check folder %s!' % (len(E),TARGET,newdir))
         print('Default Route, Charge and Multiplicity:\n %s %s' % (ROUTE,CHGMP))
     else:
-        print('~T^T~Too Bad! Don\'t find any pm6opt jobs(optimized.xyz)!')
+        os.rmdir(newdir)
+        print('~T^T~Too Bad! Not find any pm6opt jobs (%s)!' % TARGET)
+        
 
 if __name__=='__main__':
     checkcommand()

@@ -1,18 +1,23 @@
 #!/usr/bin/env python
 
-#AUTHOR: Yue Liu
-#EMAIL: yueliu96@uw.edu
-#Created on 11/28/2018
-
+'''
+ AUTHOR: Yue Liu
+ EMAIL: yueliu96@uw.edu
+ Created on 11/28/2018
+ Usage: python gjfcom2xyz.py input-file
+ Descriptions:
+Use charge and multipicity as a key to locate where to find coordinates.
+All lines contain 4 elements after chg and mp are considered as coordinates lines.
+'''
 import sys,os
 
 def checkcommand(n):
     if n==2:
         infl = sys.argv[1]
         if os.path.isfile(infl):
-            return infl,infl[:-3]+'xyz'
+            return infl,infl.split('.')[0]+'.xyz'
         else:
-            raise SystemExit('\n%s Not Found!\n' % infl)
+            raise SystemExit(':::>_<:::%s Not Found!' % infl)
     else:
         raise SystemExit('\npython gjfcom2xyz.py inputfile\n')
 
@@ -22,7 +27,7 @@ def ischgmp(lss):
             int(float(lss[0]))
             int(float(lss[1]))
             return True
-        except ValueError:
+        except:
             return False
     else:
         return False
@@ -40,7 +45,7 @@ def findstrt(fl):
     if isinstance(keyline,int):
         return keyline
     else:
-        raise SystemExit(':::>_<:::%s isn\'t real gjf/com!' % fl)
+        raise SystemExit(':::>_<:::charge and multiplicity not found, %s is not gaussian input file!' % fl)
 
 def gjfcom2xyz(fl1,fl2):
     strt = findstrt(fl1)
@@ -52,7 +57,7 @@ def gjfcom2xyz(fl1,fl2):
         f2o.write(str(natoms)+'\n')
         f2o.write('\n')
         f2o.writelines(newlines)
-    print('**\(^O^)/**%s --> %s: %s atoms found!' % (fl1,fl2,natoms))
+    print('**\(^O^)/** %s --> %s: %s atoms found!' % (fl1,fl2,natoms))
 
 if __name__=='__main__':
     gfile,xfile = checkcommand(len(sys.argv))

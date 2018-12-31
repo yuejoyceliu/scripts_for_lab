@@ -9,7 +9,8 @@ run this script 'python nxplot.py' in INITIAL_CONDITIONS directory
 First, it will check if I* finished. If all finished,it will first merge all I* files together to give you I_merged file. All important data are in final_optput.1.* file, which contains transition information from state 1 to state *
 Second, it goes to I_merged directory, to generate cross-section.dat by $NX/nxinp to calculate absorption spectra
 Third, extract wavelength within 0-1200nm from cross-section.dat to cross-section.tsv. tsv fill only contains the second and third column information of dat file; tsv can be opened by excel
-If in python3, it will plot cross-section.tsv to cross-section.png
+If in py
+thon3, it will plot cross-section.tsv to cross-section.png
 '''
 import os,glob,shutil,sys,subprocess
 import time
@@ -42,7 +43,7 @@ def nx_merge(n):
 def nx_spec():
     nstates = len(glob.glob('I_merged/final_output.1.*'))+1
     with open('I_merged/temptinp','w') as fo:
-        fo.write('5\n1\n1\n2-'+str(nstates)+'\nF\n0\n-1\nlocal\n0\nlorentz\n0.1\n310\n1\n0.005\n3\n7\n')
+        fo.write('5\n1\n1\n2-'+str(nstates)+'\nF\n0\n-1\nlocal\n1\nlorentz\n0.1\n310\n1\n0.005\n3\n7\n')
     sdo2 = 'cd I_merged; module load contrib/newtonX; $NX/nxinp < temptinp'
     p = subprocess.Popen(sdo2, shell=True)
     a = p.wait()
@@ -75,7 +76,7 @@ def myplot(X,Y):
         plt.plot(X,Y)
         plt.savefig('I_merged/cross-section.png')
 
-if __name__=='__main__':
+def nxplot():
     if os.path.exists('I_merged'):
         print('I_merged  exists and will be removed...')
         shutil.rmtree('I_merged')
@@ -85,12 +86,13 @@ if __name__=='__main__':
         raise SystemExit(':::>_<::: I* subfolder Not Found!')
     print('\'<_\' %d jobs found! Start to check if they finish...' % n)
     chk = []
+    allI.sort(key=lambda x: (len(x),x))
     for I in allI:
         chk.append(checkfinish(I))
     if False in chk:
-        raise SystemExit(':::>_<:::')
+        raise SystemExit(':::>_<::: all tasks must be finished!')
     else:
-        print('\'<_\' Finish checking, all finished...')
+        print('\'<_\' all finished...')
     nx_merge(n)
     nx_spec()
     x,y = dat2tsv()
@@ -100,7 +102,10 @@ if __name__=='__main__':
         myplot(x,y)
         print('\t   Also I_merged/cross-section.png')
 
-
-    #err=sys.exc_info()
-    #print('python error in line: %s' % err[2].tb_lineno )
-    #raise SystemExit(err[1])
+if __name__=='__main__':
+    try:
+        nxplot()
+    except:
+        err=sys.exc_info()
+        #print('python error in line: %s' % err[2].tb_lineno )
+        raise SystemExit(err[1])

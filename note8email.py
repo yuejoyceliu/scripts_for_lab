@@ -11,15 +11,18 @@ MAILT = '#SBATCH --mail-type=ALL'
 MAILU = '#SBATCH --mail-user='
 
 def checkcommand(n):
-    if n!=3:
-        raise SystemExit('python note8email.py slurmfile.sh jobname')
-    else:
+    if n==3:
         jobfile = sys.argv[1]
         jobname = sys.argv[2]
-        if os.path.isfile(jobfile):
-            return jobfile,jobname
-        else:
-            raise SystemExit('%s File Not Found' % jobfile)
+    elif n==2:
+        jobfile = sys.argv[1]
+        jobname = True
+    else:
+        raise SystemExit('python note8email.py slurmfile.sh jobname\nor\npython note8email.py slurmfile')
+    if os.path.isfile(jobfile):
+        return jobfile,jobname
+    else:
+        raise SystemExit('%s File Not Found' % jobfile)
 
 def note8email(x,jobname):
     with open(x,'r') as rdfo:
@@ -28,7 +31,10 @@ def note8email(x,jobname):
     count = 1
     for line in lines:
         if line[:len(NameKey)]==NameKey:
-            line = NameKey+jobname+'\n'
+            if jobname==True:
+                pass
+            else:
+                line = NameKey+jobname+'\n'
         if line.lstrip()[:len(MAILU)]==MAILU:
             line = MAILU+EMAIL+'\n'
             count=2

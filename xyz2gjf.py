@@ -13,12 +13,15 @@ CHGMP = '2 1\n'
 def checkcommand(n):
     if n==2:
         infl = sys.argv[1]
+        if infl[-4:]!='.xyz':
+            raise SystemExit(':::>_<:::The suffix of %s must be xyz!' % infl)
         if os.path.isfile(infl):
-            return infl,infl[:-4]
+            return infl,infl.split('.')[0]
         else:
             raise SystemExit(':::>_<:::%s Not Found!' % infl)
     else:
         raise SystemExit('\npython xyz2gjf.py xyzfile\n')
+
 def iscoords(xyzlists):
     realcoords = []
     for s in xyzlists:
@@ -29,7 +32,6 @@ def iscoords(xyzlists):
             pass
     return realcoords
 
-    
 def isxyzfile(s1,s2):
     try:
         natoms=int(s1.rstrip().lstrip())
@@ -42,7 +44,7 @@ def isxyzfile(s1,s2):
 def xyz2gjf(f1,nm):
     with open(f1,'r') as f1o:
         lines = f1o.readlines()
-    t_xyz = [x for x in lines if len(x.split())==4]
+    t_xyz = [x for x in lines[2:] if len(x.split())==4]
     coords = iscoords(t_xyz)
     isxyzfile(lines[0],len(coords))
     chk = '%chk='+nm+'.chk\n'
