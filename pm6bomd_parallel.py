@@ -18,7 +18,7 @@ else:
 
 def checkcommand():
     if len(sys.argv)!=1:
-        raise SystemExit('\npython dynamics4mopac_parallel.py\n')
+        raise SystemExit('\npython pm6bomd_parallel.py\n')
     if not bool(glob.glob('*.xyz')):
         raise SystemExit(':::>_<:::No xyz Files Found!')
 
