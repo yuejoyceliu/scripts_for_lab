@@ -146,7 +146,7 @@ def restartopt(fl):
         fo.write(route)
     print('\'<_\' Please check your new gausse input file: %s!' % newinput)
     print('Next Step:\n ~/Hyak-Gaussian/gaussain-sub.py %s\n sbatch %s.sh' % (newinput,newinput[:-4]))
-    print('You can use mergeOPTlog.py to merge two log files if you wanted!')
+    print('You can use mergeOPTlog.py to merge two log files if you want!')
 
 def generateroute(optrt):
     newrt = []
