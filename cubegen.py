@@ -4,7 +4,7 @@
  AUTHOR: Yue Liu
  EMAIL: yueliu96@uw.edu
  Created: 12/09/2018
-Need tddft log and chk file in the same folder and generate cube files
+Need tddft log and chk/fchk file in the same folder and generate cube files
 From tddft log file find number of alpha electrons and virtual alpha electrons to calculate where to find beta electron orbital: mo(beta)+=mo(NAE)+mo(NVA)
 From log to find the name of chk file to create fchk if fchk not found. fchk file shoud have the same name with chk file.
 Read all orbitals in one excited state and turn them to cube files
@@ -16,7 +16,7 @@ import sys,os,subprocess
 
 def checkcommand():
     if len(sys.argv)!=3:
-        raise SystemExit('Usage: python logchk2cube.py tddftlog Nstate')
+        raise SystemExit('Usage: python cubegen.py tddftlog Nstate')
     else:
         fa = sys.argv[1]
         if fa.split('.')[-1]!='log':
@@ -35,9 +35,15 @@ def readlog(fl,n):
     for line in lines:
         i += 1
         if '%chk=' in line:
-            chk = line.strip().split('=')[-1].split('.')[0]+'.chk'
-            if not os.path.isfile(chk):
-                raise SystemExit(':::>_<:::%s Not Found!' % chk)
+            chknm = line.strip().split('=')[-1].split('.')[0]
+            fchk = chknm+'.fchk'
+            chk = chknm+'.chk'
+            if os.path.isfile(fchk):
+                wrchk = '\n'
+            elif os.path.isfile(chk):
+                wrchk = 'formchk '+chk+'\n\n'
+            else:
+                raise SystemExit(':::>_<:::%s or %s Needed, But Not Found!' % (chk,fchk))
         elif 'alpha electrons' in line:
             nae = int(line.split()[0])
         elif 'NVA=' in line:
@@ -51,7 +57,7 @@ def readlog(fl,n):
                      int(x.lstrip()[0])
                      proc.append(x)
              except:
-                 return chk,nae+nva,proc
+                 return chknm,wrchk,nae+nva,proc
     raise SystemExit(':::>_<::: Number of state out of range!')
         
 def writecube(m,n,proc,nm,cnm):
@@ -84,15 +90,13 @@ def writebash(chk,task,nt):
     mybash = task.split('.')[0]+'.sh'   
     with open(mybash,'w') as fsh:
         fsh.write('#!/bin/bash\n#SBATCH --job-name=fchk_cube\n#SBATCH --nodes=1\n#SBATCH --ntasks-per-node=28\n#SBATCH --time=10:00\n#SBATCH --mem=100G\n')
-        pwd = subprocess.Popen('pwd',stdout=subprocess.PIPE,shell=True).stdout.read()
-        fsh.write('#SBATCH --workdir='+pwd.decode())
+        pwd = os.path.abspath('.')
+        fsh.write('#SBATCH --workdir='+pwd+'\n')
         fsh.write('#SBATCH --partition=ckpt\n#SBATCH --account=stf-ckpt\n\n')
-        #fsh.write('#SBATCH --partition=ilahie\n#SBATCH --account=ilahie\n\n')
         fsh.write('echo \'This job will run on\' $SLURM_JOB_NODELIST\n')
         fsh.write('#set up time\nstart=$(date +%s)\n\n')
         fsh.write('#load Gaussian environment\nmodule load contrib/g16.b01\n\n')
-        if not os.path.isfile(chk.split('.')[0]+'.fchk'):
-            fsh.write('#use checkpoint file to generte formatted one\nformchk '+chk+'\n\n')
+        fsh.write(chk)
         fsh.write('#load parallel environment\nmodule load parallel-20170722\n')
         fsh.write('cat '+task+' | parallel -j 28\n\n')
         fsh.write('end=$(date +%s)\necho \'Elapsed Time: \'$(($end-$start))\'s\'')
@@ -100,9 +104,9 @@ def writebash(chk,task,nt):
     print('**\(^O^)/**%s submitted to ckpt, please wait a little bit!' % mybash)
 
 def logchk2cube(flog,nstt):
-    chk,nava,process = readlog(flog,nstt)
-    tasklist,ntask = writecube(nstt,nava,process,flog.split('.')[0],chk.split('.')[0])
-    writebash(chk,tasklist,ntask)
+    chknm,wrchk,nava,process = readlog(flog,nstt)
+    tasklist,ntask = writecube(nstt,nava,process,flog.split('.')[0],chknm)
+    writebash(wrchk,tasklist,ntask)
 
 if __name__=='__main__':
     log,N = checkcommand()

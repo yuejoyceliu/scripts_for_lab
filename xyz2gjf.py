@@ -6,9 +6,9 @@
 
 import os,sys
 
-STRT = ['%mem=32gb\n','%nprocshared=28\n']
-ROUTE = '# opt wb97xd/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
-CHGMP = '2 1\n'
+STRT = ['%usessh\n','%mem=100gb\n','%nprocshared=28\n']
+ROUTE = '# opt um062x/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
+CHGMP = '1 2\n'
 
 def checkcommand(n):
     if n==2:

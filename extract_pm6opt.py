@@ -8,8 +8,8 @@ import os,sys
 
 STRT = ['%mem=32gb\n','%nprocshared=28\n']
 ROUTE1 = '# opt wb97xd/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
-ROUTE2 = '#T opt freq um062x/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
-CHGMP = '1 2\n'
+ROUTE2 = '# opt b3lyp/6-31+g(d,p) pop=none scf=(xqc,tight)\n'
+CHGMP = '2 1\n'
 TARGET='optimized.xyz'
 
 ROUTE = ROUTE2

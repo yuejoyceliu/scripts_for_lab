@@ -15,8 +15,8 @@ Description:
 
 import sys,os,glob
 
-LINK='%UseSSH\n%mem=32GB\n%nprocshared=28\n'
-ROUTE='# td(NStates=25) um062x/6-31+g(d,p) pop=min scf=(xqc,tight)'
+LINK='%UseSSH\n%mem=100GB\n%nprocshared=28\n'
+ROUTE='# td(NStates=50) um062x/6-31+g(d,p) pop=none scf=(xqc,tight)'
 CHK='%chk='
 OPT='Stationary point found'
 XYZ1='Standard orientation:'
@@ -146,7 +146,7 @@ def restartopt(fl):
         fo.write(route)
     print('\'<_\' Please check your new gausse input file: %s!' % newinput)
     print('Next Step:\n ~/Hyak-Gaussian/gaussain-sub.py %s\n sbatch %s.sh' % (newinput,newinput[:-4]))
-    print('You can use mergeOPTlog.py to merge two log files if you wanted!')
+    print('You can use mergeOPTlog.py to merge two log files if you want!')
 
 def generateroute(optrt):
     newrt = []
