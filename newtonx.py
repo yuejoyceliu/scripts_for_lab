@@ -91,10 +91,10 @@ def writeinputfiles(fl,d1,d2):
 #write input for $NX/nxinp in 'TDDFT_SPEC', will be deleted after that.
         fnx = nm+'_nxinp'
         with open(d1+'/'+fnx,'w') as fo:
-            fo.write('1\n2\n'+natoms+'\n300\ngeom\n4\nfreq.out\n1\n310\nn\n1\n1\n'+nst+'\n1\n100\n6.5\n0\n1\n7\n')
+            fo.write('1\n2\n'+natoms+'\n300\ngeom\n4\nfreq.out\n0.975\n310\nn\n1\n1\n'+nst+'\n1\n100\n6.5\n0\n1\n7\n')
 #write the new gausse input file must named with gaussian.com, which will be put in 'JOB_AD' folder.
         with open(d2+'/gaussian.com','w') as fo:
-            fo.write('%rwf='+nm+'\n%NoSave\n%chk='+nm+'\n%mem=32GB\n%nprocshared=28\n')
+            fo.write('%rwf='+nm+'\n%NoSave\n%chk='+nm+'\n%mem=100GB\n%nprocshared=28\n')
             fo.write('# TD(NStates='+nst+') '+mthd+'/'+bs+' pop=none scf=(xqc,tight) Symmetry=None\n\n')
             fo.write(nm+' newtonx\n\n')
             fo.writelines(lines[coordline-1:])
@@ -107,14 +107,14 @@ def writeinputfiles(fl,d1,d2):
         with open(d1+'/initqp_input','w') as fo:
             fo.write('&dat\n nact = 2\n numat = '+str(natoms)+'\n')
             fo.write(' npoints = 300\n file_geom = geom\n iprog = 4\n file_nmodes = freq.out\n')
-            fo.write(' anh_f = 1\n temp = 310\n ics_flg = n\n chk_e = 1\n nis = 1\n nfs = '+nst+'\n')
+            fo.write(' anh_f = 0.975\n temp = 310\n ics_flg = n\n chk_e = 1\n nis = 1\n nfs = '+nst+'\n')
             fo.write(' kvert = 1\n de = 100\n prog = 6.5\n iseed = 0\n lvprt = 1\n/\n')
 '''
 
 def nx_submit(nm,d):
     with open(d+'/nx_submit.sh','w') as fo:
         fo.write('#!/bin/bash\n#SBATCH --job-name='+nm+'\n')
-        fo.write('#SBATCH --nodes=1\n#SBATCH --ntasks-per-node=28\n#SBATCH --time=10:00:00\n#SBATCH --mem=100G\n')
+        fo.write('#SBATCH --nodes=1\n#SBATCH --ntasks-per-node=28\n#SBATCH --time=10:00:00\n#SBATCH --mem=120G\n')
         fo.write('#SABTCH --workdir='+d+'\n#SBATCH --partition=ckpt\n#SBATCH --account=stf-ckpt\n\n')
         fo.write('echo \'This job will run on\' $SLURM_JOB_NODELIST\n')
         fo.write('#set up time\nbegin=$(date +%s)\n\n')
@@ -140,7 +140,7 @@ def newtonx(opt,log):
         sdo += '$NX/nxinp < '+ fnx+';'
         sdo += 'rm '+fxyz+' '+fnx+';'
         sdo += 'echo \"\'<_\': 300 initial conditions will be calculated...\n\";'
-        sdo += 'echo \"\'<_\': The anwer to the second question is [n]\n\";'
+        sdo += 'echo \"\'<_\': The answer to the second question is [n]\n\";'
         sdo += '$NX/split_initcond.pl'
         subprocess.call(sdo,shell=True)
         allI = os.listdir(pwd+'/'+myd3)
