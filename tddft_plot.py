@@ -21,7 +21,7 @@ except ImportError as err:
 
 Xmin,Xmax,Xmajor,Xminor=200,700,50,10
 FigSize=(10,6)
-TickSize,LabelSize=12,13
+TickSize,LabelSize=18,20
 
 def checkcommand():
     if len(sys.argv)!=2:

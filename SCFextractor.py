@@ -1,37 +1,73 @@
 #!/usr/bin/env python
 
-#Author: Yue Liu
-#Usage: python SCFextractor
-#extract 'Step number','Predicted change' & 'SCF Done' from all log files in the working directory
+'''
+ AUTHOR: Yue Liu
+ EMAIL: yueliu96@uw.edu
+ Created on 11/26/2018
+ Edited on 12/17/2018
+Usage:
+ python ExtractStdOrient.py inputfile N (N=1: 1st standard orientation, N=-1: the last standard orientation)
+Description:
+ - extract the optimized coordinates (key: $XYZ1,$XYZ2) and find charge and mutiplicity from the last paragragh (key: the 1st $STOP after last $XYZ1). If most suffixes are gjf, it will be named as com; vice versa.
+ - N is an integer in -1,1,2,3,..., and N should not larger than the number of standard orientations in the input file!
+'''
 
-import os,glob,time
+import sys,glob
 
-def read2writelog(f,out):
-    wrout = open(out,'a')
-    wrout.write(f.center(80,'-')+'\n')
-    with open(f,'r') as fo:
-        lines = fo.readlines()
-    for line in lines:
-        line=line.lstrip()#keep \n at right
-        if line.startswith('Step number'):
-            wrout.write(line)
-        if line.startswith('Predicted change'):
-            wrout.write('\t'+line)
-        if line.startswith('SCF Done'):
-            wrout.write('\t\t'+line)
-    wrout.write('\n')
-    wrout.close()
+def checkcommand():
+    if len(sys.argv)!=2:
+        raise SystemExit('\n\tpython SCFextractor.py number\n (1:1st SCF energy; -1:the last SCF energy)\n')
+    try:
+        n = int(sys.argv[1])
+        out = 'SCFenergy_'+sys.argv[1]+'.csv'
+        if n==0:
+            raise SystemExit(':::>_<::: Input couldn\'t be zero!')
+        return n,out
+    except ValueError:
+        raise SystemExit(':::>_<:::\"%s\" is supposed to be an integer!' % n)
 
+def getvalues(s,n):
+#split a string s by space and return the first n numbers, return float or a list of float
+    i = 0
+    values = []
+    ls = s.split()
+    for x in ls:
+        if i>=n:
+            break
+        try:
+            values.append(float(x))
+            i += 1
+        except:
+            continue
+    if not bool(values):
+        raise SystemExit(':::>_<:::No Values Found in %s\n Warning: Delimiter Must be space or spaces' % ls)
+    if n==1:
+        return values[0]
+    else:
+        return values
 
-def extractor():
-    x = time.strftime('%Y%m%d%H%M%S',time.localtime())
-    x = 'opt'+x+'.txt'
+def write_out(n,fl):
     alllog = glob.glob('*.log')
     alllog.sort(key=lambda x: (len(x),x),reverse=False)
-    for log in alllog:
-        with open(x,'a') as fout:
-            read2writelog(log,x)
-    print('**\(^O^)/**Please check %s file' % x)
+    with open(fl,'w') as fo:
+        fo.write('isomers,E_HF(hartrees)\n')
+        for log in alllog:
+           fo.write(SCFextract(log,n)+'\n')
+    print('**\\(^O^)/**Please check '+fl+'!')
 
+def SCFextract(fl,N):
+    with open(fl,'r') as fo:
+        lines = fo.readlines()
+    eng = ['NA']
+    for line in lines:
+        if 'SCF Done' in line:
+           eng.append(getvalues(line,1))
+    try:
+        float(eng[N])
+        return fl.split('.')[0]+','+str(eng[N])
+    except:
+        raise SystemExit(':::>_<::: %s SCF Done Found in %s, but %s is specified!' % (len(eng)-1,fl,N))
+ 
 if __name__=='__main__':
-    extractor() 
+    n,out = checkcommand()
+    write_out(n,out)
