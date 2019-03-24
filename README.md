@@ -205,16 +205,71 @@
 	
 ## pm6bomd_parallel.py
 
+- Usage:
+	- python pm6bomd_parallel.py
+- Descriptions:
+	- create input files for every xyz file in the working directory to run BOMD with MOPAC package
+	- move each xyz file into a new subdirectory (dxyz) and create corresponding yaml file
+	- tasklist and bash file are generated in the working directory to submit it to Hyak with parallel-run
+
 ## pm6opt_parallel.py
+
+- Usage:
+	- python pm6opt_parallel.py
+- Descriptions:
+	- create input files for every xyz file in the working directory to run pm6 opt with MOPAC  package
+
+## prlsql_pm6opt.py
+
+- Usage:
+	- python prlsql_pm6opt.py
+- Descriptions:
+	- Similiar to pm6opt_parallel.py but using parallel_sql environment, another parallel run of Huak
+
+## prlsql_pm6traj.py
+
+- Usage:
+	- python prlsql_pm6traj.py
+- Descriptions:
+	- Similair to pm6bpmd_parallel.py but using parallel_sql environment
 
 ## tddft_lorentzian.py
 
+- Usage:
+	- python tddft_lorentzian.py tddft.log
+		- count all excitations > 0 nm
+	- python tddft_lorentzian.py tddft.log N
+		- N=200.0 means count excitations > 200.0nm
+- Descriptions:
+	- check if the last excitation exceed 210nm (START, set in the head of the script)
+		- if not: write a new gaussian input file with 'TD(ADD=xx)'
+		- if yes: procee data
+	- count excitations whose SS2 < 2.6 (MAXSS2, set in the head of the script)
+	- use lorentzian function to calcualate absorption spectra from 200-1100nm (WaveNumbers)
+	
 ## tddft_plot.py
 
+- Usage:
+	- python tddft_plot.py csv_file (got from tddft_lorentzian.py)
+- Descriptions:
+	- need python3 environment to plot absortion spectra with black line and exctations strength with dark red vertical lines
+	- load anaconda3_5.3 on Hyak
+	
 ## traj2xyz.py
+
+- Usage:
+	- python traj2xyz.py N
+- Descriptions:
+	- for all child directories in the working directory, it will find trajectory_anneal.xyz file to extract the 1st struct for every N structures.
+	- if N=100 and it has 20,000 cycles in the trajectory_anneal.xyz, you will get 20,000/100=200 structures
 
 ## xyz2gjf.py
 
+- Usage:
+	- python xyz2gjf.py xyzfile
+- Descriptions:
+	- write xyz file to gaussian input file
+	- default route, charge and multiplicity can be easily edited on the head of the script
 
 
 	
