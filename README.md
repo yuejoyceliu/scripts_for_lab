@@ -31,5 +31,6 @@
 ## GibbsEnergy.py
 
 - Usage:
-
+ - python GibbsEnergy.py energyfile
+ - energyfile is got from HFenergy.py
  
