@@ -3,20 +3,15 @@
 #AUTHOR: Yue Liu
 #ENAIL: yueliu96@uw.edu
 #CREATED: 12/01/2018
+# Usage: python extract4pm6opt.py
 
 import os,sys
 
 STRT = ['%mem=32gb\n','%nprocshared=28\n']
-ROUTE1 = '# opt wb97xd/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
-ROUTE2 = '# opt b3lyp/6-31+g(d,p) pop=none scf=(xqc,tight)\n'
+ROUTE = '# opt wb97xd/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
+#ROUTE = '# opt b3lyp/6-31+g(d,p) pop=none scf=(xqc,tight)\n'
 CHGMP = '2 1\n'
 TARGET='optimized.xyz'
-
-ROUTE = ROUTE2
-
-def checkcommand():
-    if len(sys.argv)!=1:
-        raise SystemExit('\npython extract4pm6opt.py\n')
 
 def readpm6opt(fl):
     with open(fl,'r') as fo:
@@ -87,5 +82,4 @@ def extract():
         
 
 if __name__=='__main__':
-    checkcommand()
     extract() 

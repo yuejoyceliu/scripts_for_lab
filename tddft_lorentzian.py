@@ -18,18 +18,22 @@ START = 210 #nm
 END = 700 #nm
 
 def checkcommand(n):
-    if n!=2:
-        raise SystemExit('\npython tddft_lorentzian.py tddft.log\n')
+    if n!=2 and n!=3:
+        raise SystemExit('Usage:\n    python tddft_lorentzian.py tddft.log\nOR  python tddft_lorentzian.py tddft.log N\n(N=210 means count excitations > 210nm, otherwise N=0 for default)')
     else:
         inpfile = sys.argv[1]
         if inpfile[-4:].lower()!='.log':
             raise SystemExit('\nThe suffix of %s must be log!\n' % inpfile)
         if os.path.isfile(inpfile):
-            return inpfile,inpfile[:-4]+'_uvvis.csv'
+            try:
+                calstart = float(sys.argv[2])
+            except:
+                calstart= 0
+            return inpfile,inpfile[:-4]+'_uvvis.csv',calstart
         else:
             raise SystemExit('\n%s File Not Found\n' % inpfile)
  
-def tddft(logfile,outfile):
+def tddft(logfile,outfile,calcst):
     keylines = readlogfile(logfile)
     allpeaks = list(map(readpeaks,keylines))
     allpeaks = [list(x) for x in allpeaks]#type(x)=tuple
@@ -44,7 +48,7 @@ def tddft(logfile,outfile):
         except:
             raise SystemExit('\'<_\' Ended Normally......')
 #count peaks as long as S**2<2.6
-    realpeaks = [x for x in allpeaks if x[2]<MAXSS2]
+    realpeaks = [x for x in allpeaks if x[2]<MAXSS2 and x[0]>calcst]
 #anoher way: count peaks in 700-210nm and S***2<2.6; then choose to keep or delete peaks out of range:
     '''
     realpeaks = [x for x in allpeaks if x[2]<MAXSS2 and START<=x[0]<=END]
@@ -197,5 +201,5 @@ def writeroute(oldrt):
     return ' '.join(newrt)+'\n\n'
     
 if __name__=='__main__':
-    log,out = checkcommand(len(sys.argv))
-    tddft(log,out) 
+    log,out,calcst = checkcommand(len(sys.argv))
+    tddft(log,out,calcst) 

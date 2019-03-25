@@ -28,7 +28,7 @@ CAL2J = 4.184 #J/cal
 
 def checkcommand(n):
     if n!=2:
-        raise SystemExit('\npython freq_thermodynamics.py freq.log\n')
+        raise SystemExit('\npython freq_thermal.py freq.log\n')
     else:
         if os.path.isfile(sys.argv[1]):
             return sys.argv[1]

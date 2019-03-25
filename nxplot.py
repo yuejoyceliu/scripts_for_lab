@@ -90,7 +90,11 @@ def nxplot():
     for I in allI:
         chk.append(checkfinish(I))
     if False in chk:
-        raise SystemExit(':::>_<::: all tasks must be finished!')
+        print('\n\'<_\':   enter <any number>: continue to process data\n\tenter <A-Z> or <ENTER>: stop processing data')
+        try:
+            int(input())
+        except:
+            raise SystemExit(':::>_<::: all tasks must be finished!')
     else:
         print('\'<_\' all finished...')
     nx_merge(n)

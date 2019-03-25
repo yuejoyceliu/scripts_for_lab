@@ -7,7 +7,7 @@
 import os,sys
 
 STRT = ['%usessh\n','%mem=100gb\n','%nprocshared=28\n']
-ROUTE = '# opt um062x/6-31+g(d,p) pop=min scf=(xqc,tight)\n'
+ROUTE = '# opt ub3lyp/6-31+g(d,p) pop=none scf=(xqc,tight)\n'
 CHGMP = '1 2\n'
 
 def checkcommand(n):
@@ -52,6 +52,8 @@ def xyz2gjf(f1,nm):
     with open(f2,'w') as f2o:
         f2o.writelines(STRT)
         f2o.write(chk)
+        #rwf = '%rwf=/gscratch/scrubbed/yueliu96/'+nm+'\n%NoSave\n'
+        #f2o.write(rwf)
         f2o.write(ROUTE)
         f2o.write('\n')
         f2o.write('Complex '+nm+'\n')

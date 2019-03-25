@@ -6,9 +6,9 @@
  Created on 11/26/2018
  Edited on 12/17/2018
 Usage:
- python ExtractStdOrient.py inputfile N (N=1: 1st standard orientation, N=-1: the last standard orientation)
+ python SCFextractor.py N (N=1: 1st standard orientation, N=-1: the last standard orientation)
 Description:
- - extract the optimized coordinates (key: $XYZ1,$XYZ2) and find charge and mutiplicity from the last paragragh (key: the 1st $STOP after last $XYZ1). If most suffixes are gjf, it will be named as com; vice versa.
+ - extract the Nth SCF energy from all log files in the working directory.
  - N is an integer in -1,1,2,3,..., and N should not larger than the number of standard orientations in the input file!
 '''
 

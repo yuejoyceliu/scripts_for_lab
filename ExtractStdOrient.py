@@ -4,11 +4,11 @@
  AUTHOR: Yue Liu
  EMAIL: yueliu96@uw.edu
  Created on 11/26/2018
- Edited on 12/17/2018
+ Edited on 03/23/2019
 Usage:
  python ExtractStdOrient.py inputfile N (N=1: 1st standard orientation, N=-1: the last standard orientation)
 Description:
- - extract the optimized coordinates (key: $XYZ1,$XYZ2) and find charge and mutiplicity from the last paragragh (key: the 1st $STOP after last $XYZ1). If most suffixes are gjf, it will be named as com; vice versa.
+ - extract the  coordinate (key: $XYZ1,$XYZ2) and find charge and mutiplicity from the last paragragh (key: the 1st $STOP after last $XYZ1). If most suffixes are gjf, it will be named as com; vice versa.
  - N is an integer in -1,1,2,3,..., and N should not larger than the number of standard orientations in the input file!
 '''
 
@@ -74,24 +74,22 @@ def getvalues(s,n):
 def findcoords(lines,fl,N):
 #'Standard orientation' as the 1st key because every run generates one 'Standard orienctation'.
 #'---------' as the 2nd key. There are three these dash lines. Coords are in btw the second and the third dash lines.
-    strt=[-1]
+    strt=['na']
     for i in range(len(lines)):
         line = lines[i]
         if XYZ1 in line:
             strt.append(i)
-    if len(strt)==1:
-        raise SystemExit(':::>_<:::Standard Orientation Not Found!\n')
-    elif N >= len(strt):
-        raise SystemExit(':::>_<:::Only Found %s Standart Orientations, %s Specified' % (len(strt)-1,N))
-    else:
+    try:
         newlines = lines[strt[N]:]
-        numl=[]
-        for j in range(len(newlines)):
-            line = newlines[j]
-            if line.startswith(XYZ2):
-               numl.append(j)
-               if len(numl)==3:
-                   break
+    except:
+        raise SystemExit(':::>_<:::Found %s Standart Orientations, %s Specified' % (len(strt)-1,N))
+    numl=[]
+    for j in range(len(newlines)):
+        line = newlines[j]
+        if line.startswith(XYZ2):
+            numl.append(j)
+            if len(numl)==3:
+                 break
     coords = []
     for lss in newlines[numl[1]+1:numl[2]]:
         v_xyz = getvalues(lss,6)
@@ -157,9 +155,9 @@ if __name__=='__main__':
     fl,n = checkcommand(len(sys.argv))
     try:
         n = int(n)
-        if n==0 or n<-1:
-            raise SystemExit(':::>_<::: Input couldn\'t be zero or smaller than -1!')
-        Extract_xyz(fl,int(n))
+        if n==0:
+            raise SystemExit(':::>_<::: Input couldn\'t be zero!')
+        Extract_xyz(fl,n))
     except IOError:
         raise SystemExit(':::>_<:::%s Not Found!' % fl)
     except ValueError:

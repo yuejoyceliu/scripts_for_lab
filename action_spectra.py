@@ -43,7 +43,7 @@ def action():
         wl.pop(0)
         mark_row.pop(0)
     scans = [mark_row[i+1]-mark_row[i] for i in range(len(mark_row)-1)]
-# check scan-number of every wavelength based on that of the 2nd wavelength; count the last 100 scans for the 1st wavelength or the first 100 scans for the last wavelength if the default scan number is 100 and more than 100 scans found for these two wavelength
+# check scan-number of every wavelength based on the mode of all scans; count the last 100 scans for the 1st wavelength or the first 100 scans for the last wavelength if the default scan number is 100 and more than 100 scans found for these two wavelength
     scan = mymode(scans)
     for i_x, x in enumerate(scans):
         if x > scan:

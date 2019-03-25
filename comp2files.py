@@ -34,7 +34,11 @@ def comp2files(file1,file2):
     if out1 == out2:
         print('**\(^O^)/**%s and %s are same!' % (file1,file2))
     else:
-        print(':::>_<:::%s and %s are different!' % (file1,file2))
+        nlines=[]
+        for i in range(min([len(out1),len(out2)])):
+            if out1[i] != out2[i]:
+                nlines.append(i)
+        print(':::>_<:::%s and %s are different in lines: %s!' % (file1,file2,nlines))
     
 if __name__=='__main__':
     file1,file2 = checkcommand(len(sys.argv))

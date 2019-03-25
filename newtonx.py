@@ -25,6 +25,9 @@ Note:
 from __future__ import print_function
 import sys,os,shutil,subprocess
 
+NPoints = 300
+ANH_F = 0.975
+
 def checkcommand():
     if len(sys.argv)!=3:
         raise SystemExit('\npython newtonx.py opt.gjf/com freq.log\n')
@@ -86,12 +89,13 @@ def writeinputfiles(fl,d1,d2):
         with open(d1+'/'+fxyz,'w') as fo:
             fo.write(natoms+'\n\n')
             fo.writelines(xyzlines)
-        print('\'<_\': natoms =', natoms)
+        print('Reminder: natoms =', natoms)
+        print('\t  npoints = %s\n\t  anh_f = %s' % (NPoints,ANH_F))
         nst,mthd,bs = setinitcond()
 #write input for $NX/nxinp in 'TDDFT_SPEC', will be deleted after that.
         fnx = nm+'_nxinp'
         with open(d1+'/'+fnx,'w') as fo:
-            fo.write('1\n2\n'+natoms+'\n300\ngeom\n4\nfreq.out\n0.975\n310\nn\n1\n1\n'+nst+'\n1\n100\n6.5\n0\n1\n7\n')
+            fo.write('1\n2\n'+natoms+'\n'+str(NPoints)+'\ngeom\n4\nfreq.out\n'+str(ANH_F)+'\n310\nn\n1\n1\n'+nst+'\n1\n100\n6.5\n0\n1\n7\n')
 #write the new gausse input file must named with gaussian.com, which will be put in 'JOB_AD' folder.
         with open(d2+'/gaussian.com','w') as fo:
             fo.write('%rwf='+nm+'\n%NoSave\n%chk='+nm+'\n%mem=100GB\n%nprocshared=28\n')
@@ -139,18 +143,17 @@ def newtonx(opt,log):
         sdo += '$NX/xyz2nx < '+fxyz+';'
         sdo += '$NX/nxinp < '+ fnx+';'
         sdo += 'rm '+fxyz+' '+fnx+';'
-        sdo += 'echo \"\'<_\': 300 initial conditions will be calculated...\n\";'
         sdo += 'echo \"\'<_\': The answer to the second question is [n]\n\";'
         sdo += '$NX/split_initcond.pl'
         subprocess.call(sdo,shell=True)
         allI = os.listdir(pwd+'/'+myd3)
         allI.sort(key=lambda x: (len(x),x))
         numI = len(allI)
-        seed = 1234
+        seed = 12347
         for I in allI:
 #for every splitting job, change 'iseed = -1' to 'iseed = 1234++'; write a nx_submit.sh with its directory and different jobname(structname+I).
             subprocess.call('sed -i \'s/iseed = -1/iseed = '+str(seed)+'/g\' '+ myd3+'/'+I+'/initqp_input', shell=True)
-            seed += 1234
+            seed += 2133
             nx_submit(opt.split('.')[0]+'_'+I,pwd+'/'+myd3+'/'+I)
         with open(myd1+'/newtonx.sh','w') as fo:
             fo.writelines(['cd '+'/'.join([pwd,myd3,I])+'; sbatch -p ckpt -A stf-ckpt --time=20:00:00 nx_submit.sh\n' for I in allI])

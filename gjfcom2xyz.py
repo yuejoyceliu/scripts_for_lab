@@ -7,7 +7,7 @@
  Usage: python gjfcom2xyz.py input-file
  Descriptions:
 Use charge and multipicity as a key to locate where to find coordinates.
-All lines contain 4 elements after chg and mp are considered as coordinates lines.
+All lines contain 4 elements after chg and mp are considered as coordinates lines; valid delimter: one or more spaces and the comma
 '''
 import sys,os
 
@@ -51,7 +51,7 @@ def gjfcom2xyz(fl1,fl2):
     strt = findstrt(fl1)
     with open(fl1,'r') as fo:
         lines = fo.readlines()
-    newlines = [x for x in lines[strt:] if len(x.split())==4]
+    newlines = [x for x in lines[strt:] if len(x.split())==4 or len(x.split(','))==4)]
     natoms = len(newlines)
     with open(fl2,'w') as f2o:
         f2o.write(str(natoms)+'\n')

@@ -8,6 +8,7 @@
 import sys,os
 
 KEY=' Step number'
+FINISH = 'Stationary point found'
 
 def checkcommand(n):
     if n!=3:
@@ -34,14 +35,17 @@ def FindSteps(f,n):
     with open(f,'r') as fo:
         lines = fo.readlines()
     steps = [x for x in lines if x[:len(KEY)]==KEY]
+    for line in lines:
+        if FINISH in line:
+            print(':::Reminder:::%s: optimization finish!' % f)
     if not bool(steps):
         raise SystemExit(':::>_<:::%s doesn\'t have useful information!' % f)
     num_steps = list(map(getvalue,steps))
     if len(steps)==num_steps[-1]-num_steps[0]+1:
-        print('Find %d steps in %s: step No.%02d----No.%02d' % (len(steps),f,num_steps[0],num_steps[-1]))
+        print('  Find %d steps in %s: step No.%02d----No.%02d' % (len(steps),f,num_steps[0],num_steps[-1]))
     else:
         mistep=[mis for mis in list(range(num_steps[0],num_steps[-1])) if mis not in num_steps]
-        print('Find %d steps in %s: step No.%02d----No.%02d, except %s' % (len(steps),f,num_steps[0],num_steps[-1],mistep))
+        print('  Find %d steps in %s: step No.%02d----No.%02d, except %s' % (len(steps),f,num_steps[0],num_steps[-1],mistep))
     if n==-1:
         keystep = steps[-1]
         keyn = num_steps[-1]
@@ -82,9 +86,9 @@ def merge(mfile,afile):
             with open(outfile,'w') as fo:
                 fo.writelines(m_keep)
                 fo.writelines(a_keep)
-            print('**\(^O^)/**%s & %s are merged to %s!' % (mfile,afile,outfile))
+            print('**\(^O^)/**%s & %s are merged to %s!\n' % (mfile,afile,outfile))
     except:
-         raise SystemExit(':::>_<:::Fail To Merge!')
+         raise SystemExit(':::>_<:::Fail To Merge!\n')
     
 
 
