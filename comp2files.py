@@ -37,7 +37,7 @@ def comp2files(file1,file2):
         nlines=[]
         for i in range(min([len(out1),len(out2)])):
             if out1[i] != out2[i]:
-                nlines.append(i)
+                nlines.append(i+1)
         print(':::>_<:::%s and %s are different in lines: %s!' % (file1,file2,nlines))
     
 if __name__=='__main__':

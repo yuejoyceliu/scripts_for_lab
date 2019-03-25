@@ -75,7 +75,7 @@
 - Usage:
 	- python comp2files.py file1 file2
 - Descriptions:
- 	- compare two files same or not
+ 	- compare two files same or not and print the different lines
 	
 ## cubegen.py
 
@@ -97,10 +97,10 @@
 - Descriptions:
 	- change the delimiter from space or multispaces to '\t' and written to a new file
 	
-## extract4pm6opt.py
+## extract_pm6opt.py
 
 - Usage:
-	- python extract4pm6opt.py
+	- python extract_pm6opt.py
 - Descriptions:
 	- read optimized.xyz in all subdirectories whose name starts with 'd', change their format from xyz to gaussian input and extract energies from these xyz files
 	- all new files are written to a new directory optresult
@@ -116,6 +116,13 @@
 	- The temperature is set to 310.0K, normal modes is corrected by a scaler 0.975
 	- calculated process and final data are written into \*\_freq.csv file
 	- If the first frequency is negative, it will print a warning and stop processing data
+
+## gaussian-mox.py
+
+- Usage:
+    - python gaussian-mox.py input-file partition node-num time-in-hour
+- Descriptions:
+    - create gaussian submitting bash file on Hyak-mox 
 
 ## generateLogName.py
 
@@ -233,6 +240,14 @@
 - Descriptions:
 	- Similair to pm6bpmd_parallel.py but using parallel_sql environment
 
+## restart_gaussian.py
+
+- Usage:
+    - python restart_gaussian.py oldgjf
+- Descriptions:
+    - create a new gjf file used to restart gaussian optimization or add more states for gaussian tddft jobs
+    - chk file required for the above two jobs
+
 ## tddft_lorentzian.py
 
 - Usage:
@@ -270,9 +285,3 @@
 - Descriptions:
 	- write xyz file to gaussian input file
 	- default route, charge and multiplicity can be easily edited on the head of the script
-
-
-	
-
-	
-	

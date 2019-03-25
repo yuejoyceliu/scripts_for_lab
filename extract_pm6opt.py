@@ -3,7 +3,7 @@
 #AUTHOR: Yue Liu
 #ENAIL: yueliu96@uw.edu
 #CREATED: 12/01/2018
-# Usage: python extract4pm6opt.py
+# Usage: python extract_pm6opt.py
 
 import os,sys
 
