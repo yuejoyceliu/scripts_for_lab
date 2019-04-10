@@ -157,7 +157,7 @@ if __name__=='__main__':
         n = int(n)
         if n==0:
             raise SystemExit(':::>_<::: Input couldn\'t be zero!')
-        Extract_xyz(fl,n))
+        Extract_xyz(fl,n)
     except IOError:
         raise SystemExit(':::>_<:::%s Not Found!' % fl)
     except ValueError:

@@ -98,7 +98,8 @@ def writeinputfiles(fl,d1,d2):
             fo.write('1\n2\n'+natoms+'\n'+str(NPoints)+'\ngeom\n4\nfreq.out\n'+str(ANH_F)+'\n310\nn\n1\n1\n'+nst+'\n1\n100\n6.5\n0\n1\n7\n')
 #write the new gausse input file must named with gaussian.com, which will be put in 'JOB_AD' folder.
         with open(d2+'/gaussian.com','w') as fo:
-            fo.write('%rwf='+nm+'\n%NoSave\n%chk='+nm+'\n%mem=100GB\n%nprocshared=28\n')
+           #fo.write('%rwf='+nm+'\n%NoSave\n%chk='+nm+'\n')
+            fo.write('%mem=100GB\n%nprocshared=28\n')
             fo.write('# TD(NStates='+nst+') '+mthd+'/'+bs+' pop=none scf=(xqc,tight) Symmetry=None\n\n')
             fo.write(nm+' newtonx\n\n')
             fo.writelines(lines[coordline-1:])

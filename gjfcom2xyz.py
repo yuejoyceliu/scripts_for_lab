@@ -51,7 +51,7 @@ def gjfcom2xyz(fl1,fl2):
     strt = findstrt(fl1)
     with open(fl1,'r') as fo:
         lines = fo.readlines()
-    newlines = [x for x in lines[strt:] if len(x.split())==4 or len(x.split(','))==4)]
+    newlines = [x for x in lines[strt:] if len(x.split())==4 or len(x.split(','))==4]
     natoms = len(newlines)
     with open(fl2,'w') as f2o:
         f2o.write(str(natoms)+'\n')

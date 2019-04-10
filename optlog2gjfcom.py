@@ -16,8 +16,8 @@ Description:
 import sys,os,glob
 
 LINK='%UseSSH\n%mem=100GB\n%nprocshared=28\n'
-#ROUTE='# opt um062x/6-31+g(d,p) pop=min scf=(xqc,tight)'
-ROUTE = '# wb97xd/6-31+g(d,p) pop=none scf=(xqc,tight) scrf=(pcm,solvent=water,read) geom=allcheck'
+ROUTE='# opt um062x/6-31+g(d,p) pop=min scf=(xqc,tight)'
+#ROUTE = '# wb97xd/6-31+g(d,p) pop=none scf=(xqc,tight) scrf=(pcm,solvent=water,read) geom=allcheck'
 CHK='%chk='
 OPT='Stationary point found'
 XYZ1='Standard orientation:'

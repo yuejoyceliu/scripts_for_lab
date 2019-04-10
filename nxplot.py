@@ -8,9 +8,6 @@ Usage: python nxplot.py
 run this script 'python nxplot.py' in INITIAL_CONDITIONS directory
 First, it will check if I* finished. If all finished,it will first merge all I* files together to give you I_merged file. All important data are in final_optput.1.* file, which contains transition information from state 1 to state *
 Second, it goes to I_merged directory, to generate cross-section.dat by $NX/nxinp to calculate absorption spectra
-Third, extract wavelength within 0-1200nm from cross-section.dat to cross-section.tsv. tsv fill only contains the second and third column information of dat file; tsv can be opened by excel
-If in py
-thon3, it will plot cross-section.tsv to cross-section.png
 '''
 import os,glob,shutil,sys,subprocess
 import time
@@ -18,16 +15,19 @@ import time
 def checkfinish(fd):
     fl = fd+'/initcond.log'
     try:
+        n_cond = 0
         with open(fl,'r') as fo:
-            ctts = fo.read()
-        if 'NEWTON-X ends here' in ctts:
-            return True
-        else:
-            print(' Warning: %s Not Finished!' % fd)
-            return False
-    except:
+           ctts = fo.readlines()
+        for line in ctts:
+            if 'Done' in line:
+                n_cond += 1
+            elif 'NEWTON-X ends here' in line:
+                return True,n_cond
         print(' Warning: %s Not Finished!' % fd)
-        return False
+        return False,n_cond
+    except:
+        print(' Warning: %s/initcond.log Not Found!' % fd)
+        return False,n_cond
 
 def nx_merge(n):
     with open('temptno','w') as fo:
@@ -50,66 +50,41 @@ def nx_spec():
     os.remove('I_merged/temptinp')
     if a!=0:
         raise SystemExit(':::>_<:::Fail to process spectra data!')
- 
-def dat2tsv():
-    with open('I_merged/cross-section.dat','r') as fo:
-        lines = fo.readlines()
-    with open('I_merged/cross-section.tsv','w') as fo:
-        title = lines[0].split()
-        fo.write(title[1]+'\t'+title[2]+'\n')
-        x,y = [],[]
-        for line in lines[1:]:
-            lss = line.split()
-            if 0<float(lss[1])<1200:
-                x.append(float(lss[1]))
-                y.append(float(lss[2]))
-                fo.write(lss[1]+'\t'+lss[2]+'\n')
-    return x,y
-
-def myplot(X,Y):
-        import matplotlib as mpl
-        mpl.use('Agg')
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.xlabel('wavelength(nm)')
-        plt.ylabel('cross-section')
-        plt.plot(X,Y)
-        plt.savefig('I_merged/cross-section.png')
 
 def nxplot():
-    if os.path.exists('I_merged'):
-        print('I_merged  exists and will be removed...')
-        shutil.rmtree('I_merged')
-    allI = glob.glob('I*')
-    n = len(allI)
-    if n==0:
-        raise SystemExit(':::>_<::: I* subfolder Not Found!')
-    print('\'<_\' %d jobs found! Start to check if they finish...' % n)
-    chk = []
-    allI.sort(key=lambda x: (len(x),x))
-    for I in allI:
-        chk.append(checkfinish(I))
-    if False in chk:
-        print('\n\'<_\':   enter <any number>: continue to process data\n\tenter <A-Z> or <ENTER>: stop processing data')
-        try:
-            int(input())
-        except:
-            raise SystemExit(':::>_<::: all tasks must be finished!')
-    else:
-        print('\'<_\' all finished...')
-    nx_merge(n)
-    nx_spec()
-    x,y = dat2tsv()
-    print('**\(^O^)/**Please check your I_merged/cross-section.tsv!\n\
-\t   It only contains wavelength less than 1200nm and the last wavelength is %5.2fnm\n\t   The full data file is I_merged/cross-section.dat' % x[-1]) 
-    if 1/2!=0:#in python2 1/2=0, python3: 1/2=0.5
-        myplot(x,y)
-        print('\t   Also I_merged/cross-section.png')
-
-if __name__=='__main__':
     try:
-        nxplot()
+        if os.path.exists('I_merged'):
+            print('I_merged  exists and will be removed...')
+            shutil.rmtree('I_merged')
+        allI = glob.glob('I*')
+        n = len(allI)
+        if n==0:
+            raise SystemExit(':::>_<::: I* subfolder Not Found!')
+        print('\'<_\' %d jobs found! Start to check if they finish...' % n)
+        chk = []
+        n_cond = 0
+        allI.sort(key=lambda x: (len(x),x))
+        for I in allI:
+            t_chk,t_n = checkfinish(I)
+            chk.append(t_chk)
+            n_cond += t_n
+        print('\'<_\' Finish checking! %s initial conditions found!' % n_cond)
+        if False in chk:
+            print('\n\'<_\':   enter <any number>: continue to process data\n\tenter <A-Z> or <ENTER>: stop processing data')
+            try:
+                float(input())
+            except:
+                raise SystemExit('Quit Normally!')
+        nx_merge(n)
+        nx_spec()
+        with open('I_merged/cross-section.dat') as fo:
+            lines = fo.readlines()
+        x = float(lines[-1].split()[1])
+        print('**\(^O^)/**Please check your I_merged/cross-section.dat!\n\t   The last wavelength is %5.2fnm\n' % x) 
     except:
         err=sys.exc_info()
-        #print('python error in line: %s' % err[2].tb_lineno )
+        print('python error in line: %s' % err[2].tb_lineno )
         raise SystemExit(err[1])
+
+if __name__=='__main__':
+    nxplot()

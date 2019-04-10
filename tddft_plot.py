@@ -20,7 +20,7 @@ except ImportError as err:
     raise SystemExit('Error: Must python3!')
 
 Xmin,Xmax,Xmajor,Xminor=200,700,50,10
-FigSize=(10,6)
+FigSize=(10,6) 
 TickSize,LabelSize=18,20
 
 def checkcommand():
@@ -53,7 +53,7 @@ def plot(fl):
         plt.xticks(np.arange(Xmin,Xmax+1,Xmajor),fontsize=TickSize)
         plt.yticks(fontsize=TickSize)
         ax.xaxis.set_minor_locator(mtloc(Xminor))
-        ax.set_xlabel('$\lambda$ (nm)',fontsize=LabelSize)
+        plt.xlabel('$\lambda$ (nm)',fontsize=LabelSize)
         plt.ylabel('Oscillator Strength',fontsize=LabelSize)
     #figure subtitle at upper right corner    
         nmparts = [x for x in nm.split('_') if x!='opt' and x!='add' and x!='uvvis']

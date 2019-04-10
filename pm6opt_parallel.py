@@ -4,8 +4,8 @@
  AUTHOR: Yue Liu
  EMAIL: yueliu96@uw.edu
  Created: 12/01/2018
- Edited: 12/05/2018
-Usage: python pm6opt_parallel.py
+ Edited: 04/08/2019
+Usage: python pm6opt_parallel.py or python pm6opt_parallel.py charge multiplicity
 find all xyz files in the working directory and make directories and inp.yaml for every one.
 generate tasklists.sh file and parallel_run.sh file
 after finishing, run 'sbatch parallel_run.sh'
@@ -24,10 +24,15 @@ else:
     myinput = input 
 
 def checkcommand():
-    if len(sys.argv)!=1:
-        raise SystemExit('\npython pm6opt_parallel.py\n')
-    if not bool(glob.glob('*.xyz')):
+    n = len(glob.glob('*.xyz'))
+    if n == 0:
         raise SystemExit(':::>_<:::No xyz Files Found!')
+    if len(sys.argv) == 1:
+        return issamecondition(n)
+    elif len(sys.argv) == 3:
+        return int(sys.argv[1]),int(sys.argv[2])
+    else:
+        raise SystemExit('Usage: python pm6opt_parallel.py\nOR     python pm6opt_parallel.py charge multiplicty')
 
 def mypathexist(dirs):
     for d in dirs:
@@ -90,13 +95,12 @@ def parallelrun_sh(ntasks,user,mydir):
         fo.write(p6)
         fo.write(p7)
 
-def opt():
+def opt(charge,mtplct):
     xyzfiles = glob.glob('*.xyz')
     xyzfiles.sort()
     xyzdirs = ['d'+d[:-4] for d in xyzfiles]
     mypathexist(xyzdirs)
     nxyz = len(xyzfiles)
-    charge,mtplct = issamecondition(nxyz) 
     for i in range(nxyz):
         fxyz = xyzfiles[i]
         dxyz = xyzdirs[i]
@@ -111,8 +115,8 @@ def opt():
     print('**\(^O^)/**%s tasks found! check and run:\n sbatch parallel_run.sh' % nxyz) 
 
 if __name__=='__main__':
-    checkcommand()
-    opt()
+    chg,mp = checkcommand()
+    opt(chg,mp)
                 
 
         

@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
+'''
 #AUTHOR: Yue Liu
 #EMAIL: yueliu96@uw.edu
 #Created: 11/27/2018
-#Edited: 12/29/2018
-
+#Edited: 04/08/2019
+ Usage:  python pm6bomd_parallel.py (charge, multiplicity and temperature are taken as input later)
+    or:  python pm6bomd_parallel.py charge multiplicity  T (chg & mp are intergers; T is float)
+'''
 import glob,os,sys
 from subprocess import Popen,PIPE
 
@@ -17,10 +20,19 @@ else:
     myinput = input
 
 def checkcommand():
-    if len(sys.argv)!=1:
-        raise SystemExit('\npython pm6bomd_parallel.py\n')
-    if not bool(glob.glob('*.xyz')):
+    n = len(glob.glob('*.xyz'))
+    if n == 0:
         raise SystemExit(':::>_<:::No xyz Files Found!')
+    if len(sys.argv)==1:
+        return issamecondition(n)
+    elif len(sys.argv)==4:
+        try:
+            return int(sys.argv[1]),int(sys.argv[2]),float(sys.argv[3])
+        except BaseException as err:
+            print(':::>_<::: charge and multiplicity must be integers and temperature is float!')
+            raise SystemExit(err)
+    else:
+        raise SystemExit('Usage: python pm6bomd_parallel.py\nOR     python pm6bomd_parallel.py charge(int) multiplicity(int) temperature(float)')
 
 def mypathexist(dirs):
     for d in dirs:
@@ -97,13 +109,12 @@ def parallelrun_sh(n,user,mydir):
         fo.write(p6)
         fo.write(p7)
 
-def dynamics():
+def dynamics(charge,mtplct,temp):
     xyzfiles = glob.glob('*.xyz')
     xyzfiles.sort()
     xyzdirs = ['d'+d[:-4] for d in xyzfiles]
     mypathexist(xyzdirs)
     nxyz = len(xyzfiles)
-    charge,mtplct,temp = issamecondition(nxyz) 
     for i in range(nxyz):
         fxyz = xyzfiles[i]
         dxyz = xyzdirs[i]
@@ -118,8 +129,8 @@ def dynamics():
     print('**\(^O^)/**You are ready to run mopac dynamics! Check and Run:\n sbatch parallel_run.sh')
 
 if __name__=='__main__':
-    checkcommand()
-    dynamics()
+    chg,mp,t = checkcommand()
+    dynamics(chg,mp,t)
                 
 
         
