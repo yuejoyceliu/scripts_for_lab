@@ -269,6 +269,15 @@
 - Descriptions:
 	- need python3 environment to plot absortion spectra with black line and exctations strength with dark red vertical lines
 	- load anaconda3_5.3 on Hyak
+
+## tdnx_plot.py
+
+- Usage:
+	- python tdnx_plot.py tddft_csv nx_dat (num)
+	- num: the lowest wavelength that used form newtonx calculation; num=200 if not specified
+- Descriptions:
+	- python3 environment
+	- updated based on tddft_plot.py but added functions to plot newtonx data on figure of the tddft data
 	
 ## traj2xyz.py
 
