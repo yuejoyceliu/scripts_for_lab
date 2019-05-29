@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 '''
-Usage: python tdnx_plot.py td_csv cross-section.dat
+Usage: python tdnx_plot.py td_csv cross-section.dat num
+       num is where to start coat the excitation states
 '''
 
 try:
@@ -21,13 +22,17 @@ FigSize=(10,6)
 TickSize,LabelSize=18,20
 
 def checkcommand():
-    if len(sys.argv)!=3:
-        raise SystemExit('Usage: python tdnx_plot.py td_uvvis.csv nx_cross-section.dat')
+    if len(sys.argv)!=3 and len(sys.argv)!=4:
+        raise SystemExit('Usage: python tdnx_plot.py td_uvvis.csv nx_cross-section.dat num\n\tnum: lowest wavenumer contributing to newtonx,default=200')
     td = sys.argv[1]
     nx = sys.argv[2]
+    try:
+        n = float(sys.argv[3])
+    except:
+        n = 200
     if os.path.isfile(td):
         if os.path.isfile(nx):
-             return td,nx
+             return td,nx,n
         raise SystemExit('%s Not Found!' % nx)
     raise SystemExit('%s Not Found!' % td)
 
@@ -42,7 +47,7 @@ def nx_plot(fnx):
     plt.fill_between(x,dbottom, dceil,facecolor='cyan')
     plt.plot(x,df['sigma/A^2'],color='b')
 
-def td_plot(ftd):
+def td_plot(ftd,nxcut=200):
     nm = ftd.split('.')[0]
     data = pd.read_csv(ftd,index_col=False)
 
@@ -51,6 +56,9 @@ def td_plot(ftd):
     #plot
     plt.plot(data['Wavelength(nm)'].values,data['Spectrum'].values,color='Black')
     plt.vlines(data['MaxPeak(nm).1'].values,[0],data['intensity.1'].values,color='DarkRed')
+    #coat excitation lines for newtonx with aqua color
+    nxdata = data[data['MaxPeak(nm).1']>nxcut]
+    plt.vlines(nxdata['MaxPeak(nm).1'].values,[0],nxdata['intensity.1'].values,color='aqua')
     # plot format
     plt.xlim((Xmin,Xmax))
     Ymax = ax.yaxis.get_ticklocs()[-1]
@@ -66,9 +74,9 @@ def td_plot(ftd):
     plt.text(Xmax-10,Ymax*0.95,structnm,fontsize=LabelSize,verticalalignment="top",horizontalalignment="right")
     return structnm
 
-def tdnx_plot(ftd,fnx):
+def tdnx_plot(ftd,fnx,n):
     try:
-        nm = td_plot(ftd)
+        nm = td_plot(ftd,n)
         nx_plot(fnx)
         plt.savefig(nm+'_tdnx.jpg')
         print('**\(^O^)/** Please check %s_tdnx.jpg!' % nm)
@@ -77,8 +85,8 @@ def tdnx_plot(ftd,fnx):
         raise SystemExit(':::>_<::: Error!')
 
 if __name__=='__main__':
-    td,nx = checkcommand()
-    tdnx_plot(td,nx)
+    td,nx,n = checkcommand()
+    tdnx_plot(td,nx,n)
    
 
     
